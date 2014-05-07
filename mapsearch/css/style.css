@@ -1,0 +1,31 @@
+.ui-autocomplete-loading { background: white url('images/ui-anim_basic_16x16.gif') right center no-repeat; }
+#city { width: 25em; }
+
+body { font-family: sans-serif; font-size: 80%; }
+body, html { margin: 0; padding: 0; }
+
+#container { width: 960px; margin: 0 auto; text-align: left; font-family: Georgia,"Times New Roman",Times,serif;}
+
+#container-inner { padding: 0px 11px; }
+#header { top: 0px; height: 40px; left: 0px; border-bottom: 1px solid #85A5C8;}
+a{color:#90466a;text-decoration:none;}a:hover{color:#666;}a:active{color:#000;}
+
+#footer { font-size: 60%; margin: 0 0 0 0; text-align: center; }
+h1 { font-weight: normal; font-size: 160%; margin: 0; text-align: center; }
+h2 { font-weight: normal; font-size: 120%; margin: 0; padding: 0 0 0.2em 0; }
+ul { margin: 0; padding: 0; }
+li { margin: 0.4em 0 0 1em; padding: 0; list-style:none;}
+img { border: none; }
+
+div.section1, div.section2 { margin-top: 10px; }
+div.section1 h1{ text-align:left; margin-bottom:10px; }
+body {
+	margin: 0;
+	padding: 10px 20px 20px;
+	font-family: Arial;
+	font-size: 16px;
+}
+
+.autocompleteMenu {width: 480px; overflow: hidden; white-space: nowrap;}
+.label p{float:left; margin:0px; overflow: hidden; text-overflow:ellipsis; width:240px;}
+.labelType p{float:right; margin:0px; width:235px;}

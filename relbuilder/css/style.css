@@ -1,0 +1,52 @@
+.ui-autocomplete-loading { background: white url('images/ui-anim_basic_16x16.gif') right center no-repeat; }
+#city { width: 25em; }
+
+body { font-family: sans-serif; font-size: 80%; }
+body, html { margin: 0; padding: 0; }
+
+#container { width: 1062px; margin: 0 auto; text-align: left; font-family: Georgia,"Times New Roman",Times,serif;}
+
+#container-inner { padding: 0px 11px; }
+#header { top: 0px; height: 40px; left: 0px; border-bottom: 1px solid #85A5C8;}
+a{color:#90466a;text-decoration:none;}a:hover{color:#666;}a:active{color:#000;}
+
+#footer { font-size: 60%; margin: 0 0 0 0; text-align: center; }
+h1 { font-weight: normal; font-size: 160%; margin: 0; text-align: center; }
+h2 { font-weight: normal; font-size: 120%; margin: 0; padding: 0 0 0.2em 0; }
+ul { margin: 0; padding: 0; }
+li { margin: 0.4em 0 0 1em; padding: 0; list-style:none;}
+img { border: none; }
+
+div.section1, div.section2, div.section3 { margin-top: 10px; }
+div.section2 h1{ text-align:left; margin-bottom:10px; }
+body {
+	margin: 0;
+	padding: 10px 20px 20px;
+	font-family: Arial;
+	font-size: 16px;
+}
+.ui-autocomplete {max-height:245px;overflow-y:auto;overflow-x:hidden;}
+.section1 li{display:inline;}
+#predicateDiv, #object1Div, #object2Div, #submitDiv {float:left;width:240px; padding-left: 10px; margin-right:10px; height: 355px;background-color:#EDEDED;padding-top:10px;}
+#submitDiv p {color:#FF4040;}
+#object1Endpoint , #object2Endpoint , #predicateEndpoint , #updateEndpoint {margin-bottom:10px;}
+.autocompleteMenu {width: 480px; overflow: hidden; white-space: nowrap;}
+.label p, .more p{float:left; margin:0px; overflow: hidden; text-overflow:ellipsis; width:240px;}
+.labelType p{float:right; margin:0px; width:235px;}
+.more p{color:#90466a;}
+ul.results1 { width: 900px; max-height: 294px; }
+ul.results1 li {display:block; float:left; padding:0 10px 10px; width: 128px; height:228px; }
+.thumb img { max-width: 128px; max-height: 128px; position:absolute; bottom:0; padding-bottom: 5px;} 
+div.thumb { width: 128px; height: 128px; position:relative; margin-top:10px; margin-left:10px;}
+.objectInfo { margin-left:10px; width: 138px; max-height: 100px; padding-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; -o-text-overflow: ellipsis; font-size:12px}
+div.section2 button, div.section2 h1{ margin-bottom:10px; }
+
+.button {
+  padding:5px;
+  background-color: #dcdcdc;
+  border: 1px solid #666;
+  color:#000;
+  text-decoration:none;
+}
+#submitDiv p{text-align:center;}
+#updateButton{margin-left:84;width:82px;}

@@ -1,0 +1,1 @@
+vufindRecordBase: http://collections.britishart.yale.edu/vufind/Record/

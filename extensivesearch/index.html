@@ -1,0 +1,82 @@
+<html>
+  <head>
+    <title id="title">YCBA Extensive Search</title>
+	<script src="js/jquery-1.8.0.min.js"></script>
+	<link rel="stylesheet" href="themes/base/jquery.ui.all.css">
+	<script src="ui/jquery.ui.core.js"></script>
+	<script src="ui/jquery.ui.widget.js"></script>
+	<script src="ui/jquery.ui.position.js"></script>
+	<script src="ui/jquery.ui.autocomplete.js"></script>
+        <script src="config/config.jsonp"></script>
+	<script type="text/javascript" src="js/relbuilder.main.js" ></script>
+    <script type="text/javascript" src="js/relbuilder.Europeana.js" ></script>
+    <script type="text/javascript" src="js/relbuilder.Dbpedia.js" ></script>
+    <script type="text/javascript" src="js/relbuilder.Freebase.js" ></script>
+    <script type="text/javascript" src="js/relbuilder.BritishMuseum.js" ></script>
+	<script type="text/javascript" src="js/relbuilder.YCBA.js" ></script>
+	<script type="text/javascript" src="js/relbuilder.match.js" ></script>
+	<!--script type="text/javascript" src="js/relbuilder.js" ></script-->
+	<script type="text/javascript" src="js/Math.uuid.js" ></script>
+	
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
+	<link rel="stylesheet" href="css/demos.css">
+	<link rel="Shortcut Icon" href="http://britishart.yale.edu/sites/all/themes/restricted/ycba/favicon.ico">
+<!--link type="text/css" rel="stylesheet" href="https://www.gstatic.com/freebase/suggest/4_2/suggest.min.css" />
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js"></script>
+<script type="text/javascript" src="https://www.gstatic.com/freebase/suggest/4_2/suggest.min.js"></script>
+<script type="text/javascript">
+$(function() {
+  $("#myinput").suggest({filter:'(all type:/film/director)'});
+});
+</script-->	
+	<script>
+		$(function() {
+			initialize();
+			$("#suggest").hide();
+			$("ul.results1").hide();
+			$(".loading").hide();
+			setupAutocomplete("search");
+		});	
+	</script>
+  </head>
+
+<body class="snorql">
+<!--input type="text" id="myinput"/-->
+<div>
+	<div id="container">
+		<div id="container-inner">
+			<div id="header">
+				<a  href="http://britishart.yale.edu/collections/using-collections/technology/linked-open-data"><img src="images/ycba-banner.gif" style="padding-top:10px;"/></a>
+			</div>
+			<h1 style="text-align:left;margin-top:10px;margin-bottom:10px;">Search data from different datasets</h1>
+			<div id="selectedDbList"> </div><select id="databases">
+						<option value=" " selected> </option>
+                                                <option value="All">All</option>
+					</select>
+			<div class="section1" >
+				<!--p style="float:left;">Europeana</p><!--nput id="mm" /-->
+				<div class="ui-widget">
+                                        
+					<!--label for="searchEndpoint">Endpoint: </label>
+					<select id="searchEndpoint">
+						<option value="All" selected>All</option>
+					</select>
+					<br /-->
+					<label for="search">Search: </label>
+					<input id="search" />
+					<div></div>
+				</div>			
+			</div>
+			<div class="section2" style="float:left;margin-right:0px">
+				<h1></h1>
+				<button class="button" id="suggest" onclick="viewSuggestions()">View Suggestions</button>
+				<img class="loading" src="images/ajax-loader.gif" />
+				<ul class="results1">
+				</ul>
+			</div>					
+	
+		</div>
+	</div>
+    <div id="footer"><a id="poweredby" href="#"></a></div>
+  </body>
+</html>

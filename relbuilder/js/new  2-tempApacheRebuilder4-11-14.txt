@@ -1,0 +1,24 @@
+PREFIX fts: <http://www.ontotext.com/owlim/fts#> 			
+PREFIX luc: <http://www.ontotext.com/owlim/lucene#>			
+PREFIX ycba_title: <http://collection.britishart.yale.edu/id/thesauri/title/> 			
+PREFIX ycba_identifier: <http://collection.britishart.yale.edu/id/thesauri/identifier/> 			
+SELECT DISTINCT ?objectUri ?objectTitle ?objectType ?inventoryNum ?link WHERE { 				
+	GRAPH ?graphUri { 									 
+		FILTER regex(?inventoryNum, 'B2001.2.33', 'i').  
+		FILTER regex(?objectType, '(frame)', 'i').
+		?subject  rdfs:label ?label . 					
+		<:> fts:prefixMatchIgnoreCase ?label .					
+		BIND(URI(REPLACE(str(?graphUri), '/graph', '', 'i')) AS ?objectUri).					
+		?objectUri crm:P102_has_title ?titleUri . 					
+		?titleUri crm:P2_has_type ycba_title:repository_title . 					
+		?titleUri rdfs:label ?objectTitle. 					
+		?objectUri crm:P1_is_identified_by ?ccdUri . 					
+		?ccdUri crm:P2_has_type ycba_identifier:ccd . 					
+		?ccdUri rdfs:label ?ccd .					
+		BIND(CONCAT('http://collections.britishart.yale.edu/vufind/Record/', ?ccd) AS ?link).	
+		?objectUri crm:P48_has_preferred_identifier ?inventoryUri . 					
+		?inventoryUri crm:P2_has_type ycba_identifier:inventory-number . 
+		?inventoryUri rdfs:label ?inventoryNum .					
+		?objectUri crm:P46i_forms_part_of/skos:prefLabel ?objectType .	
+	} 			
+} LIMIT 1 OFFSET 0 

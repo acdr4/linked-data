@@ -1,0 +1,44 @@
+<html>
+  <head>
+    <title id="title">YCBA Exhibitions Search</title>
+	<script src="js/jquery-1.8.0.min.js"></script>
+	<link rel="stylesheet" href="themes/base/jquery.ui.all.css">
+	<script src="http://code.jquery.com/ui/1.10.0/jquery-ui.js"></script>
+	<script type="text/javascript" src="js/myautocomplete.js" ></script>	
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
+	<link rel="stylesheet" href="css/demos.css">
+	<link rel="Shortcut Icon" href="http://britishart.yale.edu/sites/all/themes/restricted/ycba/favicon.ico">
+	<script>
+		$(function() {
+			setupAutocomplete();
+		});	
+	</script>
+  </head>
+
+<body class="snorql">
+	<div id="container">
+		<div id="container-inner">
+    
+			<div id="header">
+				<a  href="http://britishart.yale.edu/collections/using-collections/technology/linked-open-data"><img src="images/ycba-banner.gif" style="padding-top:10px;"/></a>
+			</div>
+				  
+			<div class="section1">
+				<h1>Search Exhibitions</h1>
+				<div class="ui-widget">
+					<label for="exhibitionSearch">Search: </label>
+					<input id="exhibitionSearch" />
+				</div>
+				<h1></h1>				
+			</div>
+			<div class="section2">
+				<h1></h1>				
+				<ul class="exhibitionObjects">
+				</ul>				
+			</div>			
+	
+		</div>
+	</div>
+    <div id="footer"><a id="poweredby" href="#"></a></div>
+  </body>
+</html>

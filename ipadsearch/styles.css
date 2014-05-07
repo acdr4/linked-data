@@ -1,0 +1,10 @@
+a:link {text-decoration:none;}
+#results {
+	border-style:solid;
+	border-color:#98bf21;	
+}
+li {
+	border-bottom: 1px solid #eee;
+	padding-top: 5px;
+}
+

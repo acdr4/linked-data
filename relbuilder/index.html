@@ -1,0 +1,133 @@
+<html ng-app="RelBuilderApp">
+  <head>
+    <title id="title">YCBA Relationship Builder</title>
+	<script src="js/jquery-1.8.0.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.5/angular.js"></script>
+	<script src="http://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.4.0.js"></script>
+	<script src="js/relbuilder.main.js"></script>
+	<link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
+	<script type="text/javascript" src="js/relbuilder.main.js" ></script>
+	<script type="text/javascript" src="js/relbuilder.ycba.js" ></script>
+	<script type="text/javascript" src="js/relbuilder.match.js" ></script>
+	<!--script type="text/javascript" src="js/relbuilder.js" ></script-->
+	<script type="text/javascript" src="js/Math.uuid.js" ></script>
+	<script src="config/config.jsonp"></script>
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
+	<!--link rel="stylesheet" href="css/demos.css"-->
+	<link rel="Shortcut Icon" href="http://britishart.yale.edu/sites/all/themes/restricted/ycba/favicon.ico">
+	<script>
+		$(function() {
+			//initialize();
+			$("#suggest").hide();
+			//$("ul.results1").hide();
+			$(".loading").hide();
+			//setupAutocomplete("object1");
+			//setupAutocomplete("object2");
+		});	
+	</script>
+  </head>
+
+<body class="snorql">
+<div>
+	<div id="container">
+		<div id="container-inner" ng-controller="MainCtrl">
+			<div id="header">
+				<a  href="http://britishart.yale.edu/collections/using-collections/technology/linked-open-data"><img src="images/ycba-banner.gif" style="padding-top:10px;"/></a>
+			</div>
+			<h1 style="text-align:left;margin-top:10px;margin-bottom:10px;">Build relationships between different objects</h1>
+			<ul class="section1" style="display: table;">
+				<li>
+					<div class="ui-widget" id="object1Div" style="display:none">
+						<label for="object1Endpoint">Endpoint: </label>
+						<select id="object1Endpoint" ng-options="value.Label for (key, value) in conf.Endpoints " 
+							ng-model="object1.endpoint" ng-change="update(object1)">
+						</select>
+						<label for="object1">Object 1: </label>
+						<input id="object1" ng-model="object1.selectedQuery" placeholder="Begin typing to search" 
+							typeahead="label for label in getLabels($viewValue) | filter:$viewValue" 
+							typeahead-loading="loadingLocations" class="form-control"
+							typeahead-on-select="searchSelected(object1)"/>
+						<i ng-show="loadingLocations" class="glyphicon glyphicon-refresh"></i>
+						<div ng-repeat="item in object1.selectedItems">
+							<div class='thumb'>
+								<img fallback-src="images/noCover3.gif" ng-src='{{item.thumbUrl}}'/>
+							</div>
+							<div class='objectInfo' title='{{item.objectTitle}}'>
+								{{item.objectType}}<br />					
+								<i>{{item.objectTitle}}</i><br />
+								{{item.inventoryNum}}<br />
+								<a target='_blank' href='{{item.link}}'>View Record</a>
+							</div>
+						</div>
+						
+					</div>
+				</li>	
+				<li><div class="ui-widget" id="predicateDiv">
+					<label for="predicate">Relationship: </label>
+					<select id="predicate" ng-options="value.Label for (key, value) in conf.Relationships " 
+						ng-model="predicate.id" ng-change="showOtherDivs()">
+					</select>
+				</div></li>	
+				<li>
+					<div class="ui-widget" id="object2Div" style="display:none">
+						<label for="object2Endpoint">Endpoint: </label>
+						<select id="object2Endpoint" ng-options="value.Label for (key, value) in conf.Endpoints " 
+							ng-model="object2.endpoint" ng-change="update(object2)">
+						</select>
+						<label for="object2">Object 2: </label>
+						<input id="object2" ng-model="object2.selectedQuery" placeholder="Begin typing to search" 
+							typeahead="label for label in getLabels($viewValue) | filter:$viewValue" 
+							typeahead-loading="loadingLocations" class="form-control"
+							typeahead-on-select="searchSelected(object2)"/>
+						<i ng-show="loadingLocations" class="glyphicon glyphicon-refresh"></i>
+						<div ng-repeat="item in object2.selectedItems">
+							<div class='thumb'>
+								<img fallback-src="images/noCover3.gif" ng-src='{{item.thumbUrl}}'/>
+							</div>
+							<div class='objectInfo' title='{{item.objectTitle}}'>
+								{{item.objectType}}<br />					
+								<i>{{item.objectTitle}}</i><br />
+								{{item.inventoryNum}}<br />
+								<a target='_blank' href='{{item.link}}'>View Record</a>
+							</div>
+						</div>
+					</div>
+				</li>	
+				<li>
+					<div id="submitDiv" style="display:none">
+						<label for="updateEndpoint">Endpoint: </label>
+						<select id="updateEndpoint" ng-options="value.Label for (key, value) in conf.Endpoints " 
+							ng-model="updateObj.endpoint" ng-change="update(updateObj)">
+						</select>
+						<button class="button" id="updateButton" ng-click="updateRepository()">Update</button>
+						<p>{{updateObj.info}}</p>
+					</div>
+				</li>
+			</ul>
+			<div class="section2" style="float:left;margin-right:0px">
+				<h1></h1>
+				<button class="button" id="suggest" ng-click="suggest()">View Suggestions</button>
+				<img class="loading" src="images/ajax-loader.gif" />
+				<p id="resultsInfo"></p>
+				<ul class="results1">
+					<li ng-repeat="item in resultItems">
+						<div class='thumb'>
+							<a href='#' ng-click='selectItem(item)'>
+								<img fallback-src="images/noCover3.gif" ng-src='{{item.thumbUrl}}'/>
+							</a>
+						</div>
+						<div class='objectInfo' title='{{item.objectTitle}}'>
+							{{item.objectType}}<br />					
+							<i>{{item.objectTitle}}</i><br />
+							{{item.inventoryNum}}<br />
+							<a target='_blank' href='{{item.link}}'>View Record</a>
+						</div>
+					</li>
+				</ul>
+			</div>					
+	
+		</div>
+	</div>
+    <div id="footer"><a id="poweredby" href="#"></a></div>
+  </body>
+</html>

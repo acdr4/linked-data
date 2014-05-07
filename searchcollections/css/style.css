@@ -1,0 +1,40 @@
+body {font-family: sans-serif; }
+body, html { margin: 0; padding: 0; }
+#container{height: 100%; max-width: 960px; margin: 0 auto; text-align:left; font-family: Georgia, "Times New Roman", Times, serif;}
+
+/*general styling*/
+a{color:#90466a;text-decoration:none;}
+a:hover{color:#666;}
+a:active{color:#000;}
+h1 { font-weight: normal; font-size: 160%; margin: 0; text-align: center; }
+h2 { font-weight: normal; font-size: 120%; margin: 0; padding: 0 0 0.2em 0; }
+p{margin:0px;}
+ul { margin: 0; padding: 0; }
+li { margin: 0.4em 1em 0 0; padding: 0; list-style:none;}
+img { border: none; }
+
+header{top: 0px; height: 40px; left: 0px; border-bottom: 1px solid #85A5C8;}
+#content h1{text-align: left; padding: 10px 0 0 0;}
+.searchBox{padding: 10px 0 10px 0;}
+
+/*autocomplete menu styles*/
+.ui-autocomplete-loading { background: white url('images/ui-anim_basic_16x16.gif') right center no-repeat; }
+.ui-autocomplete {max-height:245px;overflow-y:auto;overflow-x:hidden;}
+/* if you change this width, you have to change the .autocomplete width as well */
+.ui-autocomplete.ui-menu.ui-widget.ui-widget-content.ui-corner-all{width:600px;}
+.autocompleteMenu {width: 600px; overflow: hidden; white-space: nowrap; height: 16px;}
+.label p, .more p{float:left; margin:0px; overflow: hidden; text-overflow:ellipsis; width:240px;}
+.dates p{float:left; margin:0px;}
+.nationality p{float:right; margin:0px; overflow: hidden; text-overflow:ellipsis; padding-right:25px}
+.more p{color:#90466a;}
+
+/*result styling*/
+#resultBox{overflow: hidden; width:960px;min-height:195px}
+ul.results1 { width: 100%; height:100%; }
+ul.results1 li {display:block; float:left; padding:0 10px 10px 0px; width: 128px; height:178px; }
+.thumb img { max-width: 128px; max-height: 128px; position:absolute; bottom:0; padding-bottom: 5px;} 
+div.thumb { width: 128px; height: 128px; position:relative; margin-top:10px; margin-left:10px;}
+.objectInfo { margin-left:10px; width: 138px; max-height: 40px; padding-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; -o-text-overflow: ellipsis; }
+#resultBox h1{ margin-bottom:10px; }
+
+footer{height:40px; margin: 10px 0 0 0; padding-top:10px; text-align: center; border-top: 1px solid #85A5C8;}

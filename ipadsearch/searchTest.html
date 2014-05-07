@@ -1,0 +1,56 @@
+<html>
+<body>
+<div id = "results" ><ul></ul></div>
+<script type="text/javascript" src="jquery.js" ></script>
+<script>
+	query = "shoes";
+	query = query.split(" ");
+	query = query.join(":");
+	$.ajax({
+		url: 'http://collection.britishart.yale.edu/openrdf-sesame/repositories/fts_test5',
+		dataType: 'json', 
+		data: { 
+			//queryLn: 'SPARQL', server assumes it is SPARQL, can be SeRQL
+			query: "PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#> \
+					PREFIX crm: <http://erlangen-crm.org/current/> \
+					PREFIX fts: <http://www.ontotext.com/owlim/fts#> \
+					SELECT ?objectUri ?title ?largeUrl WHERE { \
+					GRAPH ?objectUri { \
+						?Subject rdfs:label ?label . \
+						?objectUri crm:P102_has_title/rdfs:label ?title . \
+						<" + query + ":> fts:prefixMatchIgnoreCase ?label. { \
+						SELECT ?objectUri ?largeUrl WHERE { \
+							?Subject crm:P70_is_documented_in ?imglist . \
+							<images:> fts:prefixMatchIgnoreCase ?imglist. \
+							?imglist crm:P70_is_documented_in ?largeUri . \
+							<large:> fts:prefixMatchIgnoreCase ?largeUri. \
+							?largeUri crm:P1_is_identified_by ?largeUrl }}}} GROUP BY ?objectUri ?title ?largeUrl limit 100 ", 
+			//   limit: '10',  //limit is part of sparql query not sesame api
+			//   infer: 'true',
+			
+			Accept: 'application/sparql-results+json'
+		},
+		success: displayData
+	});
+
+	
+	function displayData(data) {
+        var header = $('#results');
+        $.each(data.head.vars, function(key,value) {
+            header.append(value);
+        });
+
+
+        $.each(data.results.bindings, function(index, bs) {
+		header.append("<ul>");
+        $.each(data.head.vars, function(key, varname) {
+            header.append("<li>" + bs[varname].value + "</li>"); 
+            });
+        header.append("</ul>");
+        });
+
+    }
+		
+</script>
+</body>
+</html>

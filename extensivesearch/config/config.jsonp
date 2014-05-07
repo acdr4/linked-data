@@ -1,0 +1,27 @@
+RelBuilder = {
+	"VufindRecordbase" : "http://collections.britishart.yale.edu/vufind/Record/",
+	"Databases" : {
+		"YCBA" : {
+			"Label" : "Yale Center For British Art",
+			"url" : "http://collection.britishart.yale.edu/openrdf-sesame/repositories/ycba",
+		},
+		/*"BritishMuseum" : {
+			"Label" : "British Museum",
+			"url" : "http://128.86.231.86:8080/openrdf-sesame/repositories/CollectionOnline",
+		},*/
+		"Dbpedia" : {
+			"Label" : "Dbpedia",
+			"url" : "http://dbpedia.org/sparql",
+		},	
+		"Europeana" : {
+			"Label" : "Europeana",
+			"url" : "http://europeana.eu/api//v2",
+			"apikey" : "Lu4z8mYxr",
+		},
+		"Freebase" : {
+			"Label" : "Freebase",
+			"url" : "https://www.googleapis.com/freebase/v1",
+			"apikey" : "AIzaSyDLNR_qQhgP6Oq4KbexgNJKq3RxWpOrQ_w",
+		},			
+	}
+};
