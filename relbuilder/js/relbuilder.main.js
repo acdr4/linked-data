@@ -15,18 +15,8 @@ RelBuilderApp.directive('fallbackSrc', function () {
 });
 
 RelBuilderApp.controller('MainCtrl', function($scope, $http){
-	$scope.conf = RelBuilder;
-	$scope.object1 = {};
-	$scope.object1.id = "object1";
-	$scope.object2 = {};
-	$scope.object2.id = "object2";
-	$scope.predicate = {};
-	$scope.updateObj = {info:''};
-	$scope.resultItems = [];
-	$scope.curObject = {};
-	
 	$scope.initObject = function(obj) {
-		obj.endpoint = "";
+		obj.endpoint = $scope.conf.Endpoints.ycba;
 		obj.autocomplete = "";
 		obj.searchselect = "";
 		obj.criteriaquery = "";
@@ -43,12 +33,26 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 		rel.match = "";
 		rel.validtypes = [];
 	};
-	$scope.initObject($scope.object1);
-	$scope.initObject($scope.object2);
-	$scope.initRelationship(predicate);
-
+	$scope.init = function(){
+		$scope.conf = RelBuilder;
+		$scope.object1 = {};
+		$scope.object1.id = "object1";
+		$scope.object2 = {};
+		$scope.object2.id = "object2";
+		$scope.predicate = {};
+		$scope.updateObj = {endpoint:$scope.conf.Endpoints.ycba, info:''};
+		$scope.resultItems = [];
+		$scope.curObject = {};
+		$scope.initObject($scope.object1);
+		$scope.initObject($scope.object2);
+		$scope.initRelationship(predicate);
+	}
+	
+	// initialize scope
+	$scope.init();
+	
 	$scope.update = function(obj){
-		debug(obj);
+		// do something here when endpoints are changed
 	};
 	$scope.showOtherDivs = function() {
 		$('#object1Div').animate({width:'toggle'},350);
@@ -78,12 +82,12 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 				FILTER regex(?objectType, '(painting)|(frame)', 'i').\
 				}} limit 25";
 		var param = $.param({
-			query: queryStr,
-			Accept: 'application/sparql-results+json'
+			action: 'query',
+			sparqlStr: queryStr,
+			endpoint: 'http://collection.britishart.yale.edu/openrdf-sesame/repositories/ycba'
 		  });
-		var url = 'http://collection.britishart.yale.edu/openrdf-sesame/repositories/ycba?'+param;
-		debug(url);
-		return $http.get('http://cia-bam.yu.yale.edu:8080/linked-data/relbuilder/proxy.php?'+$.param({url:url}), {
+		var url = 'http://cia-bam.yu.yale.edu:8080/linked-data/relbuilder/proxy.php?'+param;
+		return $http.get(url, {
 		  /*params: {
 			query: queryStr,
 			Accept: 'application/sparql-results+json'
@@ -99,19 +103,16 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 		  angular.forEach(res, function(item){
 			objectLabels.push(item.label);
 		  });
-		  debug('oh yeah');
-		  debug(res);
 		  return objectLabels;
 		});
 	  };
 	  
+	//searches objects with labels matching the selected value
 	$scope.searchSelected = function(obj, limit, offset, criteriaStr) {
-		//if current object is not the same as the passed in object,
-		//  then don't do search because another search is going on
-		//if($scope.curObject.id !== obj.id) return;
-		//change current object to the object passed in
+		//in case stop signal on the object is activated while recursive search is going on
+		if(obj.stopSignal) {return;}
 		$scope.curObject = obj;
-		
+				
 		if(typeof(offset) === 'undefined') offset = 0;
 		if(typeof(limit) === 'undefined') limit = 1;
 		if(typeof(criteriaStr) === 'undefined') criteriaStr = "FILTER regex(?objectType, '(painting)|(frame)', 'i').";
@@ -161,28 +162,27 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 					?objectUri crm:P46i_forms_part_of/skos:prefLabel ?objectType .\
 					" + criteriaStr + "\
 				} \
-			} LIMIT " + limit + " OFFSET " + offset;debug(queryStr);
+			} LIMIT " + limit + " OFFSET " + offset;
 		var param = $.param({
-			query: queryStr,
-			Accept: 'application/sparql-results+json'
+			action: 'query',
+			sparqlStr: queryStr,
+			endpoint: 'http://collection.britishart.yale.edu/openrdf-sesame/repositories/ycba'
 		  });
-		var url = 'http://collection.britishart.yale.edu/openrdf-sesame/repositories/ycba?'+param;
-		$http.get('http://cia-bam.yu.yale.edu:8080/linked-data/relbuilder/proxy.php?'+$.param({url:url}), {
-		  /*params: {
-			query: queryStr,
-			Accept: 'application/sparql-results+json'
-		  }*/
-		}).then(function(res){
+		var url = 'http://cia-bam.yu.yale.edu:8080/linked-data/relbuilder/proxy.php?'+param;
+		$http.get(url, {}).then(function(res){
+		  //in case stop signal on the object is activated while search is going on
+		  if(obj.stopSignal) {return;}
 		  if(typeof(res.data.contents) === "undefined" ||
 			typeof(res.data.contents.results) === "undefined" ||
 			typeof(res.data.contents.results.bindings) === "undefined")
 			return [];
-		  var objectLabels = [];debug(res);
+		  var objectLabels = [];
 		  res = extractResults(res.data.contents);
 		  for(var i=0; i<res.length; i++) {
+			//in case stop signal on the object is activated while results are being processed
+			if(obj.stopSignal) {return;}
 			$scope.resultItems.push(res[i]);
 		  }
-		  debug($scope.resultItems);
 		 
 		  //only hide loading animation if no results are returned
 		  //ensures everything is retrieved before hiding the animation
@@ -197,6 +197,8 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 	};
 	
 	$scope.suggest = function() {
+		$(".loading").show();
+		var prevObj = $scope.curObject;
 		$scope.resultItems = [];
 		var obj = {};
 		if($scope.object1.selectedItems.length > 0) {
@@ -210,7 +212,7 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 			$('#resultsInfo').text('No suggestions available');
 			return;
 		}
-		var prevObj = $scope.curObject;
+		
 		$scope.curObject = obj;
 		
 		var inventoryNum = prevObj.selectedItems[0].inventoryNum;
@@ -242,12 +244,12 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 				} \
 			}";
 		var param = $.param({
-			query: queryStr,
-			Accept: 'application/sparql-results+json'
+			action: 'query',
+			sparqlStr: queryStr,
+			endpoint: 'http://collection.britishart.yale.edu/openrdf-sesame/repositories/ycba'
 		  });
-		var url = 'http://collection.britishart.yale.edu/openrdf-sesame/repositories/ycba?'+param;
-		debug(url);
-		$http.get('http://cia-bam.yu.yale.edu:8080/linked-data/relbuilder/proxy.php?'+$.param({url:url}), {
+		var url = 'http://cia-bam.yu.yale.edu:8080/linked-data/relbuilder/proxy.php?'+param;
+		$http.get(url, {
 		  /*params: {
 			query: queryStr,
 			Accept: 'application/sparql-results+json'
@@ -257,23 +259,26 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 			typeof(res.data.contents.results) === "undefined" ||
 			typeof(res.data.contents.results.bindings) === "undefined")
 			return [];
-		  var objectLabels = [];debug(res);
+		  var objectLabels = [];
 		  res = extractResults(res.data.contents);
 		  for(var i=0; i<res.length; i++) {
 			$scope.resultItems.push(res[i]);
 		  }
-		  debug($scope.resultItems);
-		 
+		  
+		  //suggestions search is done so allow search on the other object
+		  prevObj.stopSignal = false;
+			
 		  //only hide loading animation if no results are returned
 		  //ensures everything is retrieved before hiding the animation
-		  if(res.length === 0)
-			$(".loading").hide();
+		  $(".loading").hide();
 		});
 	}
 	
 	$scope.selectItem = function(selectedItem){
 		$scope.curObject.selectedItems = [];
 		$scope.curObject.selectedItems.push(selectedItem);
+		$(".loading").hide();
+		$scope.curObject.stopSignal = true;
 		$("#suggest").show();
 	};
 	
@@ -292,92 +297,50 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 			$scope.updateObj.info = "Select object2 first!";
 			return;
 		}
-		if($scope.updateObj.endpoint === "") {
+		if(typeof($scope.updateObj.endpoint.Url)==="undefined" || $scope.updateObj.endpoint.Url === "") {
 			$scope.updateObj.info = "Choose endpoint for update!";
 			return;		
 		}
-		if($scope.updateObj.endpoint !== "http://collection.britishart.yale.edu/openrdf-sesame/repositories/ycba") {
+
+		if($scope.updateObj.endpoint.Url !== "http://collection.britishart.yale.edu/openrdf-sesame/repositories/ycba") {
 			$scope.updateObj.info = "Update not yet enabled for this endpoint!";
 			return;		
 		}
+		
+		var object1ID = $scope.object1.selectedItems[0].objectUri.split("/");
+		object1ID = object1ID[object1ID.length-1];
+		var object2ID = $scope.object2.selectedItems[0].objectUri.split("/");
+		object2ID = object2ID[object2ID.length-1];
+		//painting ID first followed by frame ID
+		var firstID = $scope.object1.selectedItems[0].objectType==='Painting'? object1ID:object2ID;
+		var secondID = $scope.object1.selectedItems[0].objectType==='Frame'? object1ID:object2ID;
+		var aggregObjUri = "http://collection.britishart.yale.edu/id/" + firstID + "-" + secondID;
+		
+		var updateStr = "\
+			PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#> \
+			PREFIX crm: <http://erlangen-crm.org/current/> \
+			PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\
+			INSERT DATA{\
+				<"+aggregObjUri+"> rdf:type crm:E22_Man-Made_Object;\
+					crm:P16i_was_used_for <"+$scope.object1.selectedItems[0].objectUri+">;\
+					crm:P16i_was_used_for <"+$scope.object2.selectedItems[0].objectUri+">;\
+					crm:P108i_was_produced_by <"+aggregObjUri+"/production>.\
+				<"+aggregObjUri+"/production> rdf:type crm:E12_Production.\
+			}";
+
+		var param = $.param({
+			action: 'update',
+			sparqlStr: updateStr,
+			endpoint: 'http://collection.britishart.yale.edu/openrdf-sesame/repositories/ycba'
+		  });
+		var url = 'http://cia-bam.yu.yale.edu:8080/linked-data/relbuilder/proxy.php?'+param;
+		$http.get(url, {}).then(function(res){
+			// 204 status code indicates success
+			if(res.data.status.http_code===204) $scope.updateObj.info = "Saved relationship successfully!";
+			else $scope.updateObj.info = "Error saving relationship!";
+		});
 	};
 });
-
-function updateRepository() {
-	
-	if(RB.object1.uri == "" && RB.object2.uri == "") {
-		info.text("Select objects first!");
-		return;
-	}
-	else if(RB.object1.uri == "") {
-		info.text("Select object1 first!");
-		return;
-	}
-	else if(RB.object2.uri == "") {
-		info.text("Select object2 first!");
-		return;
-	}
-	var num1 = RB.object1.criteriaval;
-	var num2 = RB.object2.criteriaval;
-	if(!RB.rel.match.apply("", [num1, num2])) {
-		info.text("Criteria does not match!");
-		return;		
-	}
-	if(RB.update.endpoint == "") {
-		info.text("Choose endpoint for update!");
-		return;		
-	}
-	if(RB.update.endpoint != "http://collection.britishart.yale.edu/openrdf-sesame/repositories/ycba") {
-		info.text("Update not yet enabled for this endpoint!");
-		return;		
-	}
-	var updateString = RB.update.func.apply("", [RB.object1.uri, RB.object2.uri]);
-	sparqlUpdate(updateString, RB.update.endpoint, updateFinished, info);
-}
-
-function sparqlUpdate(updateString, endpoint, callback, info) {
-	$.ajax({
-		url: endpoint + "/statements",
-		type: "POST",
-		data: "update=" + encodeURIComponent(updateString),
-		dataType: "application/x-www-form-urlencoded",
-		sucess: callback(info),
-	});
-}
-
-function updateFinished(info) {
-	info.text("Update Successful!");
-	$("#submitDiv #updateButton").hide();
-	$("#submitDiv").append("<button class='button' id='updateButton' onclick='location.reload();'>New Update</button>");		
-}
-
-function itemDuplicate(arr, testItem) {
-	var isItemDuplicate = false;
-	if(arr.length > 0) {
-		$.each(arr, function(j, arrItem) {
-			if(arrItem["label"].value == testItem["label"].value){
-				isItemDuplicate = true;
-			}
-		});
-	}
-	return isItemDuplicate;
-}
-
-function querySparql(queryStr, endpoint, callback, response) {
-	response = response || "";
-	$.ajax({
-		url: endpoint,
-		dataType: 'json', 
-		data: { 
-			//queryLn: 'SPARQL', server assumes it is SPARQL, can be SeRQL
-			query: queryStr,
-		 //   limit: '10',  //limit is part of sparql query not sesame api
-		 //   infer: 'true',
-			Accept: 'application/sparql-results+json'
-		},
-		success: function(data) { callback(data, response); }, 
-	});	
-}
 
 // print str to console
 function debug(str) {
