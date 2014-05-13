@@ -40,7 +40,7 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 		$scope.object2 = {};
 		$scope.object2.id = "object2";
 		$scope.predicate = {};
-		$scope.updateObj = {endpoint:$scope.conf.Endpoints.ycba, info:''};
+		$scope.updateObj = {endpoint:$scope.conf.Endpoints.ycba, info:'', link:'', linkText:''};
 		$scope.resultItems = [];
 		$scope.curObject = {};
 		$scope.initObject($scope.object1);
@@ -275,6 +275,7 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 	}
 	
 	$scope.selectItem = function(selectedItem){
+		$scope.resultItems = [];
 		$scope.curObject.selectedItems = [];
 		$scope.curObject.selectedItems.push(selectedItem);
 		$(".loading").hide();
@@ -316,28 +317,57 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 		var secondID = $scope.object1.selectedItems[0].objectType==='Frame'? object1ID:object2ID;
 		var aggregObjUri = "http://collection.britishart.yale.edu/id/" + firstID + "-" + secondID;
 		
-		var updateStr = "\
+		var queryStr = "\
 			PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#> \
 			PREFIX crm: <http://erlangen-crm.org/current/> \
 			PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\
-			INSERT DATA{\
-				<"+aggregObjUri+"> rdf:type crm:E22_Man-Made_Object;\
-					crm:P16i_was_used_for <"+$scope.object1.selectedItems[0].objectUri+">;\
+			SELECT (count(DISTINCT ?prodUri) AS ?prodCount) WHERE{\
+				?aggregObjUri crm:P16i_was_used_for <"+$scope.object1.selectedItems[0].objectUri+">;\
 					crm:P16i_was_used_for <"+$scope.object2.selectedItems[0].objectUri+">;\
-					crm:P108i_was_produced_by <"+aggregObjUri+"/production>.\
-				<"+aggregObjUri+"/production> rdf:type crm:E12_Production.\
+					crm:P108i_was_produced_by ?prodUri.\
 			}";
-
 		var param = $.param({
-			action: 'update',
-			sparqlStr: updateStr,
+			action: 'query',
+			sparqlStr: queryStr,
 			endpoint: 'http://collection.britishart.yale.edu/openrdf-sesame/repositories/ycba'
 		  });
 		var url = 'http://cia-bam.yu.yale.edu:8080/linked-data/relbuilder/proxy.php?'+param;
 		$http.get(url, {}).then(function(res){
-			// 204 status code indicates success
-			if(res.data.status.http_code===204) $scope.updateObj.info = "Saved relationship successfully!";
-			else $scope.updateObj.info = "Error saving relationship!";
+			var prodCount = 0;
+			if(typeof(res.data.contents) === "undefined" ||
+			typeof(res.data.contents.results) === "undefined" ||
+			typeof(res.data.contents.results.bindings) === "undefined" ||
+			res.data.contents.results.bindings.length <= 0)
+			prodCount = 0;
+			else prodCount = res.data.contents.results.bindings[0].prodCount.value;
+			var prodID = ++prodCount;
+			var updateStr = "\
+				PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#> \
+				PREFIX crm: <http://erlangen-crm.org/current/> \
+				PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\
+				INSERT DATA{\
+					<"+aggregObjUri+"> rdf:type crm:E22_Man-Made_Object;\
+						crm:P16i_was_used_for <"+$scope.object1.selectedItems[0].objectUri+">;\
+						crm:P16i_was_used_for <"+$scope.object2.selectedItems[0].objectUri+">;\
+						crm:P108i_was_produced_by <"+aggregObjUri+"/production/"+prodID+">.\
+					<"+aggregObjUri+"/production/"+prodID+"> rdf:type crm:E12_Production.\
+				}";
+
+			var param = $.param({
+				action: 'update',
+				sparqlStr: updateStr,
+				endpoint: 'http://collection.britishart.yale.edu/openrdf-sesame/repositories/ycba'
+			  });
+			var url = 'http://cia-bam.yu.yale.edu:8080/linked-data/relbuilder/proxy.php?'+param;
+			$http.get(url, {}).then(function(res){
+				// 204 status code indicates success
+				if(res.data.status.http_code===204) {
+					$scope.updateObj.info = "Saved relationship successfully!";
+					$scope.updateObj.link = aggregObjUri;
+					$scope.updateObj.linkText = "View Aggregate Object";
+				}
+				else $scope.updateObj.info = "Error saving relationship!";
+			});
 		});
 	};
 });
@@ -360,4 +390,8 @@ function extractResults(data, exclude){
     }
   }
   return returnArr;
+}
+
+function paintingframeMatch(num1, num2) {
+	return (num1 != num2) && (num1.split("FR")[0] == num2.split("FR")[0]);	
 }

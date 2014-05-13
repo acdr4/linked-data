@@ -99,8 +99,11 @@
 						<select id="updateEndpoint" ng-options="value.Label for (key, value) in conf.Endpoints " 
 							ng-model="updateObj.endpoint" ng-change="update(updateObj)">
 						</select>
-						<button class="button" id="updateButton" ng-click="updateRepository()">Update</button>
-						<p>{{updateObj.info}}</p>
+						<div>
+							<a class="button" href="#" id="updateButton" ng-click="updateRepository()">Update</a>
+							<p>{{updateObj.info}}</p>
+							<a target='_blank' href='{{updateObj.link}}'>{{updateObj.linkText}}</a>
+						</div>
 					</div>
 				</li>
 			</ul>
