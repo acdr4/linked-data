@@ -44,7 +44,7 @@
 						</select>
 						<label for="object1">Object 1: </label>
 						<input id="object1" ng-model="object1.selectedQuery" placeholder="Begin typing to search" 
-							typeahead="label for label in getLabels($viewValue) | filter:$viewValue" 
+							typeahead="label for label in getLabels(object1, $viewValue) | filter:$viewValue" 
 							typeahead-loading="loadingLocations" class="form-control"
 							typeahead-on-select="searchSelected(object1)"/>
 						<i ng-show="loadingLocations" class="glyphicon glyphicon-refresh"></i>
@@ -76,7 +76,7 @@
 						</select>
 						<label for="object2">Object 2: </label>
 						<input id="object2" ng-model="object2.selectedQuery" placeholder="Begin typing to search" 
-							typeahead="label for label in getLabels($viewValue) | filter:$viewValue" 
+							typeahead="label for label in getLabels(object2, $viewValue) | filter:$viewValue" 
 							typeahead-loading="loadingLocations" class="form-control"
 							typeahead-on-select="searchSelected(object2)"/>
 						<i ng-show="loadingLocations" class="glyphicon glyphicon-refresh"></i>

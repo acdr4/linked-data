@@ -34,11 +34,13 @@ body {
 .label p, .more p{float:left; margin:0px; overflow: hidden; text-overflow:ellipsis; width:240px;}
 .labelType p{float:right; margin:0px; width:235px;}
 .more p{color:#90466a;}
-ul.results1 { width: 900px; max-height: 294px; }
-ul.results1 li {display:block; float:left; padding:0 10px 10px; width: 128px; height:228px; }
+ul.results1 { width: 1104px; max-height: 294px; }
+ul.results1 li {display:block; float:left; padding:0 10px 0px; width: 128px; height:228px;margin:0 }
+ul.results1 li:nth-child(7n+1){padding-left:0;margin-left:0;}
+ul.results1 li:nth-child(7n){padding-right:0;}
 .thumb img { max-width: 128px; max-height: 128px; position:absolute; bottom:0; padding-bottom: 5px;} 
-div.thumb { width: 128px; height: 128px; position:relative; margin-top:10px; margin-left:10px;}
-.objectInfo { margin-left:10px; width: 138px; max-height: 100px; padding-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; -o-text-overflow: ellipsis; font-size:12px}
+div.thumb { width: 128px; height: 128px; position:relative; margin-top:10px; margin-left:0px;}
+.objectInfo { margin-left:0px; width: 138px; max-height: 100px; padding-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; -o-text-overflow: ellipsis; font-size:12px}
 div.section2 button, div.section2 h1{ margin-bottom:10px; }
 
 .button {
@@ -50,7 +52,7 @@ div.section2 button, div.section2 h1{ margin-bottom:10px; }
 }
 #submitDiv div{text-align:center;}
 #submitDiv  div p{margin-top:15px;}
-#submitDiv  div a{margin-top:15px;}
+#submitDiv  div a.button{margin-top:15px;}
 
 
 

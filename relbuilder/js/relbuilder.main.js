@@ -59,7 +59,8 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 		$('#object2Div').animate({width:'toggle'},350);
 		$('#submitDiv').animate({width:'toggle'},350);
 	};
-	$scope.getLabels = function(val) {
+	$scope.getLabels = function(obj, val) {
+		$scope.curObject.stopSignal = true;
 		$("#suggest").hide();
 		var query = val;
 		query = query.split("\"");
@@ -84,25 +85,20 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 		var param = $.param({
 			action: 'query',
 			sparqlStr: queryStr,
-			endpoint: 'http://collection.britishart.yale.edu/openrdf-sesame/repositories/ycba'
+			endpoint: obj.endpoint.Url
 		  });
-		var url = 'http://cia-bam.yu.yale.edu:8080/linked-data/relbuilder/proxy.php?'+param;
-		return $http.get(url, {
-		  /*params: {
-			query: queryStr,
-			Accept: 'application/sparql-results+json'
-		  }*/
-		}).then(function(res){
-			
+		var url = 'http://localhost:'+$scope.conf.ApplicationPort+'/linked-data/relbuilder/proxy.php?'+param;
+		return $http.get(url, {}).then(function(res){
 		  if(typeof(res.data.contents) === "undefined" ||
 			typeof(res.data.contents.results) === "undefined" ||
-			typeof(res.data.contents) === "undefined")
+			typeof(res.data.contents.results.bindings) === "undefined")
 			return [];
 		  var objectLabels = [];
 		  res = extractResults(res.data.contents);
 		  angular.forEach(res, function(item){
 			objectLabels.push(item.label);
 		  });
+		  $scope.curObject.stopSignal = false;
 		  return objectLabels;
 		});
 	  };
@@ -130,12 +126,8 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 		query = query.split("\"");
 		query = query.join("");
 		query = query.split(" ");
-		var str = '';
-		for(var i=0; i<query.length; i++) {
-			str += "?subject luc:myTestIndex '" + query[i] + "*' . ";
-		}
 		query = query.join(":");
-		var str2 = "?subject  rdfs:label ?label . \
+		var searchStr = "?subject  rdfs:label ?label . \
 					<" + query + ":> fts:prefixMatchIgnoreCase ?label .";
 		
 		var queryStr = "PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#> \
@@ -147,7 +139,7 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 			PREFIX ycba_identifier: <http://collection.britishart.yale.edu/id/thesauri/identifier/> \
 			SELECT DISTINCT ?objectUri ?objectTitle ?objectType ?inventoryNum ?link WHERE { \
 				GRAPH ?graphUri { \
-					" + str2 + "\
+					" + searchStr + "\
 					BIND(URI(REPLACE(str(?graphUri), '/graph', '', 'i')) AS ?objectUri).\
 					?objectUri crm:P102_has_title ?titleUri . \
 					?titleUri crm:P2_has_type ycba_title:repository_title . \
@@ -166,9 +158,9 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 		var param = $.param({
 			action: 'query',
 			sparqlStr: queryStr,
-			endpoint: 'http://collection.britishart.yale.edu/openrdf-sesame/repositories/ycba'
+			endpoint: $scope.curObject.endpoint.Url
 		  });
-		var url = 'http://cia-bam.yu.yale.edu:8080/linked-data/relbuilder/proxy.php?'+param;
+		var url = 'http://localhost:'+$scope.conf.ApplicationPort+'/linked-data/relbuilder/proxy.php?'+param;
 		$http.get(url, {}).then(function(res){
 		  //in case stop signal on the object is activated while search is going on
 		  if(obj.stopSignal) {return;}
@@ -201,10 +193,10 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 		var prevObj = $scope.curObject;
 		$scope.resultItems = [];
 		var obj = {};
-		if($scope.object1.selectedItems.length > 0) {
+		if($scope.curObject.id==='object1') {
 			obj = $scope.object2;
 		}
-		else if($scope.object2.selectedItems.length > 0) {
+		else if($scope.curObject.id==='object2') {
 			obj = $scope.object1;
 		}
 		else {
@@ -246,15 +238,10 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 		var param = $.param({
 			action: 'query',
 			sparqlStr: queryStr,
-			endpoint: 'http://collection.britishart.yale.edu/openrdf-sesame/repositories/ycba'
+			endpoint: $scope.curObject.endpoint.Url
 		  });
-		var url = 'http://cia-bam.yu.yale.edu:8080/linked-data/relbuilder/proxy.php?'+param;
-		$http.get(url, {
-		  /*params: {
-			query: queryStr,
-			Accept: 'application/sparql-results+json'
-		  }*/
-		}).then(function(res){
+		var url = 'http://localhost:'+$scope.conf.ApplicationPort+'/linked-data/relbuilder/proxy.php?'+param;
+		$http.get(url, {}).then(function(res){
 		  if(typeof(res.data.contents) === "undefined" ||
 			typeof(res.data.contents.results) === "undefined" ||
 			typeof(res.data.contents.results.bindings) === "undefined")
@@ -329,9 +316,9 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 		var param = $.param({
 			action: 'query',
 			sparqlStr: queryStr,
-			endpoint: 'http://collection.britishart.yale.edu/openrdf-sesame/repositories/ycba'
+			endpoint: $scope.updateObj.endpoint.Url
 		  });
-		var url = 'http://cia-bam.yu.yale.edu:8080/linked-data/relbuilder/proxy.php?'+param;
+		var url = 'http://localhost:'+$scope.conf.ApplicationPort+'/linked-data/relbuilder/proxy.php?'+param;
 		$http.get(url, {}).then(function(res){
 			var prodCount = 0;
 			if(typeof(res.data.contents) === "undefined" ||
@@ -358,7 +345,7 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 				sparqlStr: updateStr,
 				endpoint: 'http://collection.britishart.yale.edu/openrdf-sesame/repositories/ycba'
 			  });
-			var url = 'http://cia-bam.yu.yale.edu:8080/linked-data/relbuilder/proxy.php?'+param;
+			var url = 'http://localhost:'+$scope.conf.ApplicationPort+'/linked-data/relbuilder/proxy.php?'+param;
 			$http.get(url, {}).then(function(res){
 				// 204 status code indicates success
 				if(res.data.status.http_code===204) {
