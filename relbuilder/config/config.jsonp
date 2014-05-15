@@ -1,5 +1,4 @@
 RelBuilder = {
-	"ApplicationPort": 88,
 	"VufindRecordbase" : "http://collections.britishart.yale.edu/vufind/Record/",
 	"Relationships" : {
 		"Painting_To_Frame" : {

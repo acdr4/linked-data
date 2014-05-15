@@ -87,7 +87,7 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 			sparqlStr: queryStr,
 			endpoint: obj.endpoint.Url
 		  });
-		var url = 'http://localhost:'+$scope.conf.ApplicationPort+'/linked-data/relbuilder/proxy.php?'+param;
+		var url = '/linked-data/relbuilder/proxy.php?'+param;
 		return $http.get(url, {}).then(function(res){
 		  if(typeof(res.data.contents) === "undefined" ||
 			typeof(res.data.contents.results) === "undefined" ||
@@ -160,7 +160,7 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 			sparqlStr: queryStr,
 			endpoint: $scope.curObject.endpoint.Url
 		  });
-		var url = 'http://localhost:'+$scope.conf.ApplicationPort+'/linked-data/relbuilder/proxy.php?'+param;
+		var url = '/linked-data/relbuilder/proxy.php?'+param;
 		$http.get(url, {}).then(function(res){
 		  //in case stop signal on the object is activated while search is going on
 		  if(obj.stopSignal) {return;}
@@ -240,7 +240,7 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 			sparqlStr: queryStr,
 			endpoint: $scope.curObject.endpoint.Url
 		  });
-		var url = 'http://localhost:'+$scope.conf.ApplicationPort+'/linked-data/relbuilder/proxy.php?'+param;
+		var url = '/linked-data/relbuilder/proxy.php?'+param;
 		$http.get(url, {}).then(function(res){
 		  if(typeof(res.data.contents) === "undefined" ||
 			typeof(res.data.contents.results) === "undefined" ||
@@ -318,7 +318,7 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 			sparqlStr: queryStr,
 			endpoint: $scope.updateObj.endpoint.Url
 		  });
-		var url = 'http://localhost:'+$scope.conf.ApplicationPort+'/linked-data/relbuilder/proxy.php?'+param;
+		var url = '/linked-data/relbuilder/proxy.php?'+param;
 		$http.get(url, {}).then(function(res){
 			var prodCount = 0;
 			if(typeof(res.data.contents) === "undefined" ||
@@ -343,9 +343,9 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 			var param = $.param({
 				action: 'update',
 				sparqlStr: updateStr,
-				endpoint: 'http://collection.britishart.yale.edu/openrdf-sesame/repositories/ycba'
+				endpoint: $scope.updateObj.endpoint.Url
 			  });
-			var url = 'http://localhost:'+$scope.conf.ApplicationPort+'/linked-data/relbuilder/proxy.php?'+param;
+			var url = '/linked-data/relbuilder/proxy.php?'+param;
 			$http.get(url, {}).then(function(res){
 				// 204 status code indicates success
 				if(res.data.status.http_code===204) {
