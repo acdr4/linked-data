@@ -1,5 +1,7 @@
+var EndpointSupport = {};
 var RelBuilderApp = angular.module('RelBuilderApp', ['ui.bootstrap']);
 
+// for showing a default image in case an image link is broken or empty
 RelBuilderApp.directive('fallbackSrc', function () {
 	return {
     restrict: 'A',
@@ -14,7 +16,10 @@ RelBuilderApp.directive('fallbackSrc', function () {
   };
 });
 
+// the main controller for the applicaiton
 RelBuilderApp.controller('MainCtrl', function($scope, $http){
+
+	// sets the initial state of objects that the app uses
 	$scope.initObject = function(obj) {
 		obj.endpoint = $scope.conf.Endpoints.ycba;
 		obj.autocomplete = "";
@@ -26,6 +31,8 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 		obj.selectedItems = [];
 		obj.stopSignal = false;
 	};
+	
+	// initializes the relationship
 	$scope.initRelationship = function(rel) {
 		rel.id = "";
 		rel.criteria = "";
@@ -33,6 +40,8 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 		rel.match = "";
 		rel.validtypes = [];
 	};
+	
+	// sets the initial state of objects and relationship
 	$scope.init = function(){
 		$scope.conf = RelBuilder;
 		$scope.object1 = {};
@@ -54,40 +63,25 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 	$scope.update = function(obj){
 		// do something here when endpoints are changed
 	};
+	
+	// show the other divs when the user selects a relationship to build
 	$scope.showOtherDivs = function() {
 		$('#object1Div').animate({width:'toggle'},350);
 		$('#object2Div').animate({width:'toggle'},350);
 		$('#submitDiv').animate({width:'toggle'},350);
 	};
+	
+	// returns items for the autocomplete menu as a user types
 	$scope.getLabels = function(obj, val) {
 		$scope.curObject.stopSignal = true;
 		$("#suggest").hide();
 		var query = val;
-		query = query.split("\"");
-		query = query.join("");
-		query = query.split(" ");
-		query = query.join(":");
-		var queryStr = "PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#> \
-			PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#> \
-			PREFIX crm: <http://erlangen-crm.org/current/> \
-			PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \
-			PREFIX fts: <http://www.ontotext.com/owlim/fts#> \
-			SELECT DISTINCT ?label ?objectType WHERE { \
-			GRAPH ?g { \
-				?Subject rdfs:label ?label . \
-				?Subject rdf:type ?type.\
-				<" + query + ":> fts:prefixMatchIgnoreCase ?label.\
-				BIND(URI(REPLACE(str(?g), '/graph', '', 'i')) AS ?objectUri).\
-				?objectUri crm:P46i_forms_part_of/skos:prefLabel ?objectType . \
-				FILTER regex(str(?type), '(E35_Title)|(E42_Identifier)', 'i').\
-				FILTER regex(?objectType, '(painting)|(frame)', 'i').\
-				}} limit 25";
 		var param = $.param({
 			action: 'query',
-			sparqlStr: queryStr,
+			sparqlStr: EndpointSupport[obj.endpoint.id][$scope.predicate.id].getLabels(query),
 			endpoint: obj.endpoint.Url
 		  });
-		var url = '/linked-data/relbuilder/proxy.php?'+param;
+		var url = '/linked-data/relbuilder/sparqlrequests.php?'+param;
 		return $http.get(url, {}).then(function(res){
 		  if(typeof(res.data.contents) === "undefined" ||
 			typeof(res.data.contents.results) === "undefined" ||
@@ -103,9 +97,9 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 		});
 	  };
 	  
-	//searches objects with labels matching the selected value
+	// searches objects with labels matching the selected value
 	$scope.searchSelected = function(obj, limit, offset, criteriaStr) {
-		//in case stop signal on the object is activated while recursive search is going on
+		// in case stop signal on the object is activated while recursive search is going on
 		if(obj.stopSignal) {return;}
 		$scope.curObject = obj;
 				
@@ -123,44 +117,13 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 		//  spaces in search terms
 		$(".loading").show();
 		var query = obj.selectedQuery;
-		query = query.split("\"");
-		query = query.join("");
-		query = query.split(" ");
-		query = query.join(":");
-		var searchStr = "?subject  rdfs:label ?label . \
-					<" + query + ":> fts:prefixMatchIgnoreCase ?label .";
 		
-		var queryStr = "PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#> \
-			PREFIX crm: <http://erlangen-crm.org/current/> \
-			PREFIX fts: <http://www.ontotext.com/owlim/fts#> \
-			PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \
-			PREFIX luc: <http://www.ontotext.com/owlim/lucene#>\
-			PREFIX ycba_title: <http://collection.britishart.yale.edu/id/thesauri/title/> \
-			PREFIX ycba_identifier: <http://collection.britishart.yale.edu/id/thesauri/identifier/> \
-			SELECT DISTINCT ?objectUri ?objectTitle ?objectType ?inventoryNum ?link WHERE { \
-				GRAPH ?graphUri { \
-					" + searchStr + "\
-					BIND(URI(REPLACE(str(?graphUri), '/graph', '', 'i')) AS ?objectUri).\
-					?objectUri crm:P102_has_title ?titleUri . \
-					?titleUri crm:P2_has_type ycba_title:repository_title . \
-					?titleUri rdfs:label ?objectTitle. \
-					?objectUri crm:P1_is_identified_by ?ccdUri . \
-					?ccdUri crm:P2_has_type ycba_identifier:ccd . \
-					?ccdUri rdfs:label ?ccd .\
-					BIND(CONCAT('http://collections.britishart.yale.edu/vufind/Record/', ?ccd) AS ?link).\
-					?objectUri crm:P48_has_preferred_identifier ?inventoryUri . \
-					?inventoryUri crm:P2_has_type ycba_identifier:inventory-number . \
-					?inventoryUri rdfs:label ?inventoryNum .\
-					?objectUri crm:P46i_forms_part_of/skos:prefLabel ?objectType .\
-					" + criteriaStr + "\
-				} \
-			} LIMIT " + limit + " OFFSET " + offset;
 		var param = $.param({
 			action: 'query',
-			sparqlStr: queryStr,
+			sparqlStr: EndpointSupport.ycba.Painting_To_Frame.searchSelected(query, offset, limit),
 			endpoint: $scope.curObject.endpoint.Url
 		  });
-		var url = '/linked-data/relbuilder/proxy.php?'+param;
+		var url = '/linked-data/relbuilder/sparqlrequests.php?'+param;
 		$http.get(url, {}).then(function(res){
 		  //in case stop signal on the object is activated while search is going on
 		  if(obj.stopSignal) {return;}
@@ -168,7 +131,6 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 			typeof(res.data.contents.results) === "undefined" ||
 			typeof(res.data.contents.results.bindings) === "undefined")
 			return [];
-		  var objectLabels = [];
 		  res = extractResults(res.data.contents);
 		  for(var i=0; i<res.length; i++) {
 			//in case stop signal on the object is activated while results are being processed
@@ -188,6 +150,7 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 		});
 	};
 	
+	// return objects related to a particular object based on the defined relationship
 	$scope.suggest = function() {
 		$(".loading").show();
 		var prevObj = $scope.curObject;
@@ -207,40 +170,12 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 		
 		$scope.curObject = obj;
 		
-		var inventoryNum = prevObj.selectedItems[0].inventoryNum;
-		var criteriaStr = "";
-		if(prevObj.selectedItems[0].objectType.toLowerCase() === 'frame') inventoryNum = inventoryNum.replace('FR', '');
-		else inventoryNum += 'FR';
-		
-		var queryStr = "PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#> \
-			PREFIX crm: <http://erlangen-crm.org/current/> \
-			PREFIX fts: <http://www.ontotext.com/owlim/fts#> \
-			PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \
-			PREFIX luc: <http://www.ontotext.com/owlim/lucene#>\
-			PREFIX ycba_title: <http://collection.britishart.yale.edu/id/thesauri/title/> \
-			PREFIX ycba_identifier: <http://collection.britishart.yale.edu/id/thesauri/identifier/> \
-			SELECT DISTINCT ?objectUri ?objectTitle ?objectType ?inventoryNum ?link WHERE { \
-				GRAPH ?graphUri { \
-					?inventoryUri crm:P2_has_type ycba_identifier:inventory-number . \
-					?inventoryUri rdfs:label '" + inventoryNum + "' .\
-					?inventoryUri rdfs:label ?inventoryNum .\
-					BIND(URI(REPLACE(str(?graphUri), '/graph', '', 'i')) AS ?objectUri).\
-					?objectUri crm:P102_has_title ?titleUri . \
-					?titleUri crm:P2_has_type ycba_title:repository_title . \
-					?titleUri rdfs:label ?objectTitle. \
-					?objectUri crm:P1_is_identified_by ?ccdUri . \
-					?ccdUri crm:P2_has_type ycba_identifier:ccd . \
-					?ccdUri rdfs:label ?ccd .\
-					BIND(CONCAT('http://collections.britishart.yale.edu/vufind/Record/', ?ccd) AS ?link).\
-					?objectUri crm:P46i_forms_part_of/skos:prefLabel ?objectType .\
-				} \
-			}";
 		var param = $.param({
 			action: 'query',
-			sparqlStr: queryStr,
+			sparqlStr: EndpointSupport.ycba.Painting_To_Frame.suggest(prevObj),
 			endpoint: $scope.curObject.endpoint.Url
 		  });
-		var url = '/linked-data/relbuilder/proxy.php?'+param;
+		var url = '/linked-data/relbuilder/sparqlrequests.php?'+param;
 		$http.get(url, {}).then(function(res){
 		  if(typeof(res.data.contents) === "undefined" ||
 			typeof(res.data.contents.results) === "undefined" ||
@@ -261,6 +196,9 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 		});
 	}
 	
+	// triggered when an item is selected
+	// the item is added to the selected items for the current object
+	// the stop signal is triggered so that if search for the current object was still going on, it is stopped
 	$scope.selectItem = function(selectedItem){
 		$scope.resultItems = [];
 		$scope.curObject.selectedItems = [];
@@ -270,88 +208,71 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 		$("#suggest").show();
 	};
 	
+	// sends the relationship triples to the chosen triple store
 	$scope.updateRepository = function() {
 		$scope.updateObj.info = "";
+		//ensure that both object1 and object2 have been selected
 		if($scope.object1.selectedItems.length < 1 &&
 			$scope.object2.selectedItems.length < 1) {
 			$scope.updateObj.info = "Select objects first!";
 			return;
 		}
+		//ensure object1 has been selected
 		else if($scope.object1.selectedItems.length < 1) {
 			$scope.updateObj.info = "Select object1 first!";
 			return;
 		}
+		// ensure object2 has been selected
 		else if($scope.object2.selectedItems.length < 1) {
 			$scope.updateObj.info = "Select object2 first!";
 			return;
 		}
+		// ensure the endpoint for update has been chosen
 		if(typeof($scope.updateObj.endpoint.Url)==="undefined" || $scope.updateObj.endpoint.Url === "") {
 			$scope.updateObj.info = "Choose endpoint for update!";
 			return;		
 		}
-
+		// ensure the endpoint is supported
 		if($scope.updateObj.endpoint.Url !== "http://collection.britishart.yale.edu/openrdf-sesame/repositories/ycba") {
 			$scope.updateObj.info = "Update not yet enabled for this endpoint!";
 			return;		
 		}
 		
-		var object1ID = $scope.object1.selectedItems[0].objectUri.split("/");
-		object1ID = object1ID[object1ID.length-1];
-		var object2ID = $scope.object2.selectedItems[0].objectUri.split("/");
-		object2ID = object2ID[object2ID.length-1];
-		//painting ID first followed by frame ID
-		var firstID = $scope.object1.selectedItems[0].objectType==='Painting'? object1ID:object2ID;
-		var secondID = $scope.object1.selectedItems[0].objectType==='Frame'? object1ID:object2ID;
-		var aggregObjUri = "http://collection.britishart.yale.edu/id/" + firstID + "-" + secondID;
+		//generating the uri for the aggregate object
+		var aggregObjIdentify = EndpointSupport.ycba.Painting_To_Frame.createAggregUri($scope.object1, $scope.object2);
+		var aggregObjID = aggregObjIdentify.aggregObjID;
+		var aggregObjUri = aggregObjIdentify.aggregObjUri;
 		
-		var queryStr = "\
-			PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#> \
-			PREFIX crm: <http://erlangen-crm.org/current/> \
-			PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\
-			SELECT (count(DISTINCT ?prodUri) AS ?prodCount) WHERE{\
-				?aggregObjUri crm:P16i_was_used_for <"+$scope.object1.selectedItems[0].objectUri+">;\
-					crm:P16i_was_used_for <"+$scope.object2.selectedItems[0].objectUri+">;\
-					crm:P108i_was_produced_by ?prodUri.\
-			}";
+		
+		// query for counting the number of production events for the aggregation object defined
+		// the number is zero if the aggregation object is not in the triple store yet
 		var param = $.param({
 			action: 'query',
-			sparqlStr: queryStr,
+			sparqlStr: EndpointSupport.ycba.Painting_To_Frame.preUpdateQuery($scope.object1.selectedItems[0].objectUri, $scope.object2.selectedItems[0].objectUri),
 			endpoint: $scope.updateObj.endpoint.Url
 		  });
-		var url = '/linked-data/relbuilder/proxy.php?'+param;
-		$http.get(url, {}).then(function(res){
-			var prodCount = 0;
-			if(typeof(res.data.contents) === "undefined" ||
-			typeof(res.data.contents.results) === "undefined" ||
-			typeof(res.data.contents.results.bindings) === "undefined" ||
-			res.data.contents.results.bindings.length <= 0)
-			prodCount = 0;
-			else prodCount = res.data.contents.results.bindings[0].prodCount.value;
-			var prodID = ++prodCount;
-			var updateStr = "\
-				PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#> \
-				PREFIX crm: <http://erlangen-crm.org/current/> \
-				PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\
-				INSERT DATA{\
-					<"+aggregObjUri+"> rdf:type crm:E22_Man-Made_Object;\
-						crm:P16i_was_used_for <"+$scope.object1.selectedItems[0].objectUri+">;\
-						crm:P16i_was_used_for <"+$scope.object2.selectedItems[0].objectUri+">;\
-						crm:P108i_was_produced_by <"+aggregObjUri+"/production/"+prodID+">.\
-					<"+aggregObjUri+"/production/"+prodID+"> rdf:type crm:E12_Production.\
-				}";
-
-			var param = $.param({
-				action: 'update',
-				sparqlStr: updateStr,
-				endpoint: $scope.updateObj.endpoint.Url
-			  });
-			var url = '/linked-data/relbuilder/proxy.php?'+param;
+		var url = '/linked-data/relbuilder/sparqlrequests.php?'+param;
+		$http.get(url, {}).then(function(results){
+			var updateStrings = EndpointSupport.ycba.Painting_To_Frame.update(results, aggregObjUri, $scope.object1.selectedItems[0].objectUri, $scope.object2.selectedItems[0].objectUri);
+			var url = '/linked-data/relbuilder/saverdf.php?'+$.param({rdfStr:updateStrings.rdfStr, id: aggregObjID});
 			$http.get(url, {}).then(function(res){
 				// 204 status code indicates success
 				if(res.data.status.http_code===204) {
-					$scope.updateObj.info = "Saved relationship successfully!";
-					$scope.updateObj.link = aggregObjUri;
-					$scope.updateObj.linkText = "View Aggregate Object";
+					var param = $.param({
+					action: 'update',
+					sparqlStr: updateStrings.sparqlStr,
+					endpoint: $scope.updateObj.endpoint.Url
+				  });
+				var url = '/linked-data/relbuilder/sparqlrequests.php?'+param;
+				$http.get(url, {}).then(function(res){
+					// 204 status code indicates success
+					if(res.data.status.http_code===204) {
+						$scope.updateObj.info = "Saved relationship successfully!";
+						$scope.updateObj.link = aggregObjUri;
+						$scope.updateObj.linkText = "View Aggregate Object";
+					}
+					else $scope.updateObj.info = "Error saving relationship!";
+				});
 				}
 				else $scope.updateObj.info = "Error saving relationship!";
 			});
@@ -360,10 +281,13 @@ RelBuilderApp.controller('MainCtrl', function($scope, $http){
 });
 
 // print str to console
+// for easier debugging instead of typing javascript:console.log(str) again and again
 function debug(str) {
 	javascript:console.log(str);
 }
 
+// extract data from sparql results
+// instead of arrayElement.property.value, one can get the value by arrayElement.property
 function extractResults(data, exclude){
   var dataArr = data.results.bindings;
   var varArr = data.head.vars;
@@ -371,6 +295,7 @@ function extractResults(data, exclude){
   for(var i=0; i<dataArr.length; i++){
     var index = returnArr.length;
     returnArr[index] = {};
+	//iterate for each property
     for(var j=0; j<varArr.length; j++){
 	  if(typeof(dataArr[i][varArr[j]]) !== "undefined")
 		returnArr[index][varArr[j]] = dataArr[i][varArr[j]].value;
@@ -379,6 +304,8 @@ function extractResults(data, exclude){
   return returnArr;
 }
 
-function paintingframeMatch(num1, num2) {
-	return (num1 != num2) && (num1.split("FR")[0] == num2.split("FR")[0]);	
-}
+
+
+
+
+

@@ -6,23 +6,22 @@
 	<script src="http://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.4.0.js"></script>
 	<script src="js/relbuilder.main.js"></script>
 	<link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
+	<script>
+		//object into which code for supporting the different endpoints is added
+		
+		
+		
+	</script>
 	<script type="text/javascript" src="js/relbuilder.main.js" ></script>
 	<script type="text/javascript" src="js/relbuilder.ycba.js" ></script>
-	<script type="text/javascript" src="js/relbuilder.match.js" ></script>
-	<!--script type="text/javascript" src="js/relbuilder.js" ></script-->
-	<script type="text/javascript" src="js/Math.uuid.js" ></script>
 	<script src="config/config.jsonp"></script>
     <link rel="stylesheet" type="text/css" href="css/style.css" />
 	<!--link rel="stylesheet" href="css/demos.css"-->
 	<link rel="Shortcut Icon" href="http://britishart.yale.edu/sites/all/themes/restricted/ycba/favicon.ico">
 	<script>
 		$(function() {
-			//initialize();
 			$("#suggest").hide();
-			//$("ul.results1").hide();
 			$(".loading").hide();
-			//setupAutocomplete("object1");
-			//setupAutocomplete("object2");
 		});	
 	</script>
   </head>
@@ -65,7 +64,7 @@
 				<li><div class="ui-widget" id="predicateDiv">
 					<label for="predicate">Relationship: </label>
 					<select id="predicate" ng-options="value.Label for (key, value) in conf.Relationships " 
-						ng-model="predicate.id" ng-change="showOtherDivs()">
+						ng-model="predicate" ng-change="showOtherDivs()">
 					</select>
 				</div></li>	
 				<li>

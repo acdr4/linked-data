@@ -2,32 +2,22 @@ RelBuilder = {
 	"VufindRecordbase" : "http://collections.britishart.yale.edu/vufind/Record/",
 	"Relationships" : {
 		"Painting_To_Frame" : {
+			"id": "Painting_To_Frame",
 			"Label" : "Painting To Frame",
 			"Criteria" : "inventoryNum",
-			"ValidTypes" : ["Painting", "Frame"],
-			"Match" : paintingframeMatch,
-			"CriteriaQuery" : {
-				"YCBA" : ycba_paintingframecriteria
-			},
-			"Suggest" : {
-				"YCBA": ycba_paintingframesuggest
-			},
-			"Update" : {
-				"YCBA": ycba_paintingframeupdate
-			}
+			"ValidTypes" : ["Painting", "Frame"]
 		}
 	},
 	"Endpoints" : {
 		"ycba" : {
+			"id": "ycba",
 			"Label" : "Yale Center For British Art",
-			"Url" : "http://collection.britishart.yale.edu/openrdf-sesame/repositories/ycba",
-			"Autocomplete" : ycba_autocomplete,
-			"Searchselected" : ycba_searchselected
+			"Url" : "http://collection.britishart.yale.edu/openrdf-sesame/repositories/ycba"
 		},
 		"bm" : {
+			"id": "bm",
 			"Label" : "British Museum",
-			"Url" : "http://84.40.1.27/openrdf-sesame/repositories/CollectionOnline",
-			"Autocomplete" : ycba_autocomplete
+			"Url" : "http://84.40.1.27/openrdf-sesame/repositories/CollectionOnline"
 		}
 	}
 };
